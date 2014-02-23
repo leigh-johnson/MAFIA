@@ -1,0 +1,81 @@
+
+#global rules
+<Button, Label>
+    font_size: 30
+
+#screen roll
+
+<titleScreen>
+    BoxLayout:
+        orientation: 'vertical'
+        Image:
+            source: 'logo.png'
+        Button:
+            text: 'Start'
+            #on_press: root.wipeJson()
+            on_press: root.manager.current = 'roleDistribution'
+
+<setNumber>
+    BoxLayout:
+        orientation: 'vertical'
+        Slider:
+            step: 1
+            id: playerNumberSlider
+            range: (5, 12)
+            value: 8
+            orientation: 'horizontal'
+        Button:
+            text: 'Number of players? %s'  % int(playerNumberSlider.value)
+            on_press: root.putNumber()
+            on_press: root.manager.current = 'setSetup'
+
+<setSetup>
+    on_enter: root.buildContent()
+    BoxLayout:
+        orientation: 'vertical'
+        Accordion:
+            orientation: 'vertical'
+            id: setupAccordion
+        Button:
+            size_hint: (1, .2)
+            text: 'I pick this one!'
+            on_press: root.putSetup()
+            on_press: root.manager.current = 'setPlayers'
+
+<setPlayers>
+    on_enter: root.buildContent()
+    BoxLayout:
+        orientation: 'vertical'
+        GridLayout:
+            id: playerGrid
+            cols: 2
+        Button:
+            size_hint: (1, .2)
+            text: 'Set!'
+            on_press: root.putPlayers()
+            on_press: root.manager.current = 'roleDistribution'
+
+<roleDistribution>
+    on_enter: root.randomize()
+    on_enter: root.buildContent()
+    BoxLayout:
+        padding: 50
+        orientation: 'vertical'
+        Spinner:
+            is_open: True
+            padding: 0
+            text: 'Pass me around, tap for roles'
+            id: roleSpinner
+            size_hint: (1, .15)
+            on_text: root.updateContent(roleSpinner)
+        multiLineLabel:
+            id: rolePanel
+            halign: 'center'
+            valign: 'middle'
+            font_size: 30
+            text: 'Your role will appear here \n Keep the device turned away from other players'
+        Button:
+            size_hint: (1, .15)
+            id: destroyButton
+
+<playerHUD>:
