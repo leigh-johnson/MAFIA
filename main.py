@@ -1,4 +1,5 @@
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -22,6 +23,23 @@ gameValues = JsonStore('gameValues.json')
 gameSetups = JsonStore('gameSetups.json')
 players = JsonStore('players.json')
 
+class TimerButton(Button):
+
+    def __init__(self, seconds, **kwargs):
+        super(TimerButton, self).__init__(**kwargs)
+        self.seconds = seconds
+        self.text = 'Start Day: %s seconds' %self.seconds
+
+    def on_press(self):
+        Clock.schedule_once(self.timeCall, 1)
+
+    def timeCall(self, dt):
+        if self.seconds > 0:
+            self.seconds -= 1
+            self.text = "Day ends in: %s seconds" % self.seconds
+            Clock.schedule_once(self.timeCall, 1)
+        else:
+            sm.current = 'dayResolution'
 
 class multiLineLabel(Label):
     def __init__(self, **kw):
@@ -112,8 +130,10 @@ class roleDistribution(Screen):
 
         for player in playerList:
             roleButton = Button(text=player)
+            roleButton.name = player
             roleButton.bind(on_press=self.buildPopup)
             self.ids.roleLayout.add_widget(roleButton)
+
 
     def buildPopup(self, instance):
         roleName = players.get(instance.text).get('role')
@@ -141,16 +161,47 @@ class roleDistribution(Screen):
             halign='center', valign='middle'))
         rolePopup = Popup(title =roleName, content=content,
             size_hint=(.6, .6))
+        rolePopup.name = instance.text
+        rolePopup.bind(on_dismiss=self.removeButton)
         rolePopup.open()
 
-    def getPartners(self, instance):
-        pass
+    def removeButton(self, instance):
+        '''Removes a child of ids.roleLayout, playerName passed as instance.name'''
+        '''Implemented to avoid awkward situations where user has access to already-viewed roles'''
+        #instance of RolePopup()
+        for child in self.ids.roleLayout.children:
+            if child.name == instance.name:
+                self.ids.roleLayout.remove_widget(child)
+        #after all the roles are distributed, add a Start button
+        if self.ids.roleLayout.children == []:
+            sm.current = 'deadlineTimer'
 
-class Day(Screen):
-    pass
+class deadlineTimer(Screen):
+    '''Counts down from settings.deadline'''
+    def buildContent(self):
+        self.add_widget(TimerButton(2))
+
+class dayResolution(Screen):
+
+    def buildContent(self):
+        for i in players.keys():
+            playerButton = Button(text=i)
+            playerButton.bind(on_press=self.lynchPlayer)
+            self.ids.dayLayout.add_widget(playerButton)
+
+    def lynchPlayer(self, instance):
+        print(instance.text + ' is dead')
 
 class Night(Screen):
     pass
+
+class Settings(Screen):
+
+    #from kivy.uix.settings
+    pass
+
+
+
 sm = ScreenManager()
 
 sm.add_widget(titleScreen(name='titleScreen'))
@@ -158,7 +209,8 @@ sm.add_widget(setNumber(name='setNumber'))
 sm.add_widget(setSetup(name='setSetup'))
 sm.add_widget(setPlayers(name='setPlayers'))
 sm.add_widget(roleDistribution(name='roleDistribution'))
-sm.add_widget(Day(name='Day'))
+sm.add_widget(deadlineTimer(name='deadlineTimer'))
+sm.add_widget(dayResolution(name='dayResolution'))
 sm.add_widget(Night(name='Night'))
 
 class Mafia(App):

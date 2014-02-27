@@ -81,7 +81,32 @@
     on_enter: root.buildContent()
     BoxLayout:
         orientation: 'vertical'
-        id: roleLayout
+        GridLayout:
+            cols: 3
+            padding: 30
+            spacing: 20
+            id: roleLayout
+        Label:
+            text: 'View your role'
+            size_hint: (1, .2)
+
+<deadlineTimer>
+    on_enter: root.buildContent()
+    BoxLayout:
+        id: deadlineTimer
+<dayResolution>
+    on_enter:root.buildContent()
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            size_hint: (1, .2)
+            text: 'Who did you lynch?'
+        GridLayout:
+            cols: 3
+            padding: 30
+            spacing: 20
+            id: dayLayout
+<Night>
 
 <popupContent@BoxLayout>:
     Label:
