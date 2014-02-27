@@ -1,7 +1,30 @@
 {
+  "mainFile": "", 
+  "use-tabs": false, 
   "venv": "/home/nuwen/MAFIA/venv/bin/python", 
-  "project-type": "Import from sources", 
+  "relatedProjects": [], 
   "name": "MAFIA", 
-  "license": "GNU General Public License v3", 
+  "license": "MIT License", 
+  "url": "", 
+  "pythonPath": "/home/nuwen/MAFIA/venv/bin/python2.7", 
+  "preExecScript": "", 
+  "additional_builtins": [], 
+  "programParams": "", 
+  "indentation": 4, 
+  "PYTHONPATH": "", 
+  "supported-extensions": [
+    ".py", 
+    ".html", 
+    ".jpg", 
+    ".png", 
+    ".ui", 
+    ".css", 
+    ".json", 
+    ".js", 
+    ".ini", 
+    ".kv"
+  ], 
+  "project-type": "Import from sources", 
+  "postExecScript": "", 
   "description": ""
 }

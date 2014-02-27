@@ -3,6 +3,27 @@
 <Button, Label>
     font_size: 30
 
+
+<HUD@ActionBar>:
+    pos_hint: {'top':1}
+    ActionView:
+        use_separator: True
+        ActionPrevious:
+            title: 'Action Bar'
+            with_previous: False
+        ActionOverflow:
+        ActionButton:
+            text: 'Btn1'
+            on_press:
+        ActionGroup:
+            text: 'Help'
+            ActionButton:
+                text: 'Tutorial'
+            ActionButton:
+                text: 'Role Info'
+            ActionButton:
+                text: 'About'
+
 #screen roll
 
 <titleScreen>
@@ -12,8 +33,8 @@
             source: 'logo.png'
         Button:
             text: 'Start'
-            #on_press: root.wipeJson()
-            on_press: root.manager.current = 'roleDistribution'
+            on_press: root.wipeJson()
+            on_press: root.manager.current = 'setNumber'
 
 <setNumber>
     BoxLayout:
@@ -21,7 +42,7 @@
         Slider:
             step: 1
             id: playerNumberSlider
-            range: (5, 12)
+            range: (5, 9)
             value: 8
             orientation: 'horizontal'
         Button:
@@ -59,23 +80,9 @@
     on_enter: root.randomize()
     on_enter: root.buildContent()
     BoxLayout:
-        padding: 50
         orientation: 'vertical'
-        Spinner:
-            is_open: True
-            padding: 0
-            text: 'Pass me around, tap for roles'
-            id: roleSpinner
-            size_hint: (1, .15)
-            on_text: root.updateContent(roleSpinner)
-        multiLineLabel:
-            id: rolePanel
-            halign: 'center'
-            valign: 'middle'
-            font_size: 30
-            text: 'Your role will appear here \n Keep the device turned away from other players'
-        Button:
-            size_hint: (1, .15)
-            id: destroyButton
+        id: roleLayout
 
-<playerHUD>:
+<popupContent@BoxLayout>:
+    Label:
+        text: 'test'

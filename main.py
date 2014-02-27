@@ -1,15 +1,19 @@
 from kivy.app import App
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.slider import Slider
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.textinput import TextInput
+from kivy.factory import Factory
 from kivy.lang import Builder
+from kivy.properties import ObjectProperty, StringProperty
 from kivy.storage.jsonstore import JsonStore
 from kivy.garden.navigationdrawer import NavigationDrawer
+from gameRoles import gameRoles
 import random
 
 Builder.load_file('screens.kv')
@@ -33,6 +37,7 @@ class titleScreen(Screen):
     def wipeJson(self):
         gameValues.clear()
         players.clear()
+
 class setNumber(Screen):
 
     def putNumber(self):
@@ -72,43 +77,74 @@ class setPlayers(Screen):
             playerList.append(child.text)
         gameValues.put('playerList', value=playerList)
 
+
 class roleDistribution(Screen):
 
     def randomize(self):
         roleList = []
         playerList = gameValues.get('playerList').get('value')
         setupName = gameValues.get('setupName').get('value')
-        for role in gameSetups.get(setupName).get('roles'):
-            roleList.append(str(role))
+
+        #small hack to account for RNG in 9p Cop+Town/Masons
+        if setupName == "Cop & Vanilla OR Masons":
+            #array is [0, 1, n] where 0, 1 are [faction_Role-faction_role] pairs
+            subList = gameSetups.get("Cop & Vanilla OR Masons").get('roles')[0:2]
+            random.shuffle(subList)
+            roleList.append(subList[0].split("-")[0])
+            roleList.append(subList[0].split("-")[1])
+            for role in gameSetups.get(setupName).get('roles')[2:]:
+                roleList.append(str(role))
+
+        #role array of other setups is 1-1
+        else:
+            for role in gameSetups.get(setupName).get('roles'):
+                roleList.append(str(role))
 
         random.shuffle(roleList)
-        for player in playerList:
-            players.put(player, role=roleList[0])
-            roleList.pop(0)
 
+        for player in playerList:
+            splitList = roleList[0].split("_")
+            players.put(player, faction=splitList[0], role=splitList[1])
+            roleList.pop(0)
 
     def buildContent(self):
         playerList = gameValues.get('playerList').get('value')
-        self.ids.roleSpinner.values = playerList
 
-    def updateContent(self, instance):
-        '''a roleSpinner instance'''
-        playerName = instance.text
-        role = players.get(playerName).get('role')
-        winCon = 'Your wincon goes here'
-        #roleText = role.json.get(role)
+        for player in playerList:
+            roleButton = Button(text=player)
+            roleButton.bind(on_press=self.buildPopup)
+            self.ids.roleLayout.add_widget(roleButton)
 
-        if role == 'Vanilla Scum' or 'masonTown':
-            print ('I have not matched your buddy yet')
-        else:
-            roleText = 'The role descriptions are not written yet'
-            self.ids.rolePanel.text = ('Hello', playerName, '\n', 'You are a', role, roleText, winCon)
-        self.ids.destroyButton.text = ('Cast this message into the flames')
+    def buildPopup(self, instance):
+        roleName = players.get(instance.text).get('role')
+        content = BoxLayout(orientation='vertical')
+        content.add_widget(multiLineLabel(text=gameRoles.get(roleName).get('info'),
+            halign='center', valign='middle' ))
+        if gameRoles.get(roleName).get('partner') == True:
+            if roleName == 'Mason':
+                partners = list(players.find(role='Mason'))
+                #removes playerName
+                partners[:] = [i for i in partners if i[0] != instance.text]
+                partnerStr = ''
+                for n in partners:
+                    partnerStr += '\n' + str(n[0]) + ' the Mason'
+            else:
+                partners = list(players.find(faction='Mafia'))
+                #removes playerName from set via instance.text
+                partners[:] = [i for i in partners if i[0] != instance.text]
+                partnerStr = ''
+                #build a string
+                for n in partners:
+                    partnerStr += '\n ' + str(n[0]) + ' the '
+                    partnerStr += str(n[1].get('role')) + '\n'
+            content.add_widget(Label(text=('You are teamed up with:  [b]%s[/b]' % partnerStr), markup=True,
+            halign='center', valign='middle'))
+        rolePopup = Popup(title =roleName, content=content,
+            size_hint=(.6, .6))
+        rolePopup.open()
 
-    def destroyContent(self, instance):
-        self.ids.rolePanel.text = 'initial text'
-
-
+    def getPartners(self, instance):
+        pass
 
 class Day(Screen):
     pass

@@ -1,0 +1,97 @@
+{
+  "Vengeful": {
+    "description": "A quick nightless setup for 5 players featuring 3 vanilla town, a goon scum, a Godfather, and special Day 1 mechanics. If town is lynched Day 1, that townie may shoot another player. If the Godfather is lynched on Day 1, the town wins by default.",
+    "nightkill": false,
+    "twilightStop": true,
+    "dayStart": true,
+    "playerNumber" : 5,
+    "roles" : [
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Mafia_Godfather",
+        "Mafia_Goon"]
+  },
+  "Speed by Hito": {
+    "description": "A nightless setup with two possible outcomes to Day 1: if Town is lynched, Maifa must immediately kill one of their own. If a Mafia member is lynched Day 1, the remaining Mafia may kill 1 Town immediately.",
+    "nightkill": false,
+    "twilightStop": true,
+    "dayStart": true,
+    "playerNumber": 8,
+    "roles" : [
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Mafia_Goon",
+        "Mafia_Goon",
+        "Mafia_Goon"
+        ]
+  },
+  "Vanilla Nightless": {
+    "description": "A nightless setup for 6 players.",
+    "nightkill": false,
+    "twilightStop": false,
+    "dayStart": true,
+    "playerNumber": 6,
+    "roles" : [
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Mafia_Goon",
+        "Mafia_Goon"
+        ]
+  },
+  "Masons & Mafia": {
+    "description": "A skill-intensive setup for 8 players, featuring 2 Town Masons and 2 Mafia.",
+    "nightkill": true,
+    "twilightStop": false,
+    "dayStart": true,
+    "playerNumber": 8,
+    "roles" : [
+        "Mafia_Goon",
+        "Mafia_Goon",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Mason",
+        "Town_Mason"]
+  },
+  "Macho Cop & Doctor": {
+    "description": "A setup with thoughtful night actions for 7 players. 2 Mafia face down 5 Town with special roles: Town Doctor and Macho Cop. The Macho Cop can be protected by the Town Doctor.",
+    "nightkill": true,
+    "twilightStop": "None",
+    "dayStart": true,
+    "playerNumber": 7,
+    "roles" : [
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Vanilla Town",
+        "Town_Cop",
+        "Town_Doctor",
+        "Mafia_Goon",
+        "Mafia_Goon"
+        ]
+  },
+"Cop & Vanilla OR Masons" : {
+      "description": "This setup features two Mafia against randomly generated town powers: Town Cop & a Vanilla Town OR a pair of masons.",
+      "nightkill": true,
+      "twilightStop": "None",
+      "dayStart": true,
+      "playerNumber": 9,
+      "roles" : [
+            "Town_Vanilla Town-Town_Cop",
+            "Town_Mason-Town_Mason",
+          "Town_Vanilla Town",
+          "Town_Vanilla Town",
+          "Town_Vanilla Town",
+          "Town_Vanilla Town",
+          "Town_Vanilla Town",
+          "Mafia_Goon",
+          "Mafia_Goon"
+          ]
+      }
+}
