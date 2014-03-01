@@ -32,6 +32,7 @@
         Image:
             source: 'logo.png'
         Button:
+            size_hint: (1, .2)
             text: 'Start'
             on_press: root.wipeJson()
             on_press: root.manager.current = 'setNumber'
@@ -46,8 +47,8 @@
             value: 8
             orientation: 'horizontal'
         Button:
-            text: 'Number of players? %s'  % int(playerNumberSlider.value)
-            on_press: root.putNumber()
+            text: 'Number of ? %s'  % int(playerNumberSlider.value)
+            on_press: root.store()
             on_press: root.manager.current = 'setSetup'
 
 <setSetup>
@@ -60,7 +61,7 @@
         Button:
             size_hint: (1, .2)
             text: 'I pick this one!'
-            on_press: root.putSetup()
+            on_press: root.store()
             on_press: root.manager.current = 'setPlayers'
 
 <setPlayers>
@@ -73,7 +74,7 @@
         Button:
             size_hint: (1, .2)
             text: 'Set!'
-            on_press: root.putPlayers()
+            on_press: root.store()
             on_press: root.manager.current = 'roleDistribution'
 
 <roleDistribution>
@@ -94,20 +95,27 @@
     on_enter: root.buildContent()
     BoxLayout:
         id: deadlineTimer
+
+<Day>
+    Button:
+        text: 'The Day is %s' % app.dayCount
+        on_press: root.increase()
+        on_press: root.manager.current = 'deadlineTimer'
 <dayResolution>
     on_enter:root.buildContent()
     BoxLayout:
+        id: dayBox
         orientation: 'vertical'
         Label:
+            id: dayLabel
             size_hint: (1, .2)
             text: 'Who did you lynch?'
         GridLayout:
             cols: 3
             padding: 30
             spacing: 20
-            id: dayLayout
+            id: dayGrid
 <Night>
 
-<popupContent@BoxLayout>:
-    Label:
-        text: 'test'
+
+<flipLabel@Label>:
