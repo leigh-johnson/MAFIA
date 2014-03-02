@@ -26,7 +26,7 @@
 
 #screen roll
 
-<titleScreen>
+<titleScreen>:
     BoxLayout:
         orientation: 'vertical'
         Image:
@@ -34,8 +34,7 @@
         Button:
             size_hint: (1, .2)
             text: 'Start'
-            on_press: root.wipeJson()
-            on_press: root.manager.current = 'setNumber'
+            on_press: root.manager.current = 'roleDistribution'
 
 <setNumber>
     BoxLayout:
@@ -95,27 +94,47 @@
     on_enter: root.buildContent()
     BoxLayout:
         id: deadlineTimer
+        Label:
+            #text: 'With %(living)s alive, the lynch threshold is %(threshold)s' % {'living': len(app.aliveList), 'threshold': len(app.aliveList)/2}
 
+<Flip>
+    on_enter: root.buildContent()
 <Day>
-    Button:
-        text: 'The Day is %s' % app.dayCount
-        on_press: root.increase()
-        on_press: root.manager.current = 'deadlineTimer'
-<dayResolution>
     on_enter:root.buildContent()
     BoxLayout:
         id: dayBox
         orientation: 'vertical'
         Label:
-            id: dayLabel
             size_hint: (1, .2)
-            text: 'Who did you lynch?'
+            text: 'The sun sets on Day %s. Who must die? '% app.dayCount
         GridLayout:
+            id: dayGrid
             cols: 3
             padding: 30
             spacing: 20
-            id: dayGrid
-<Night>
 
+<vengefulKill>
+    on_enter: root.buildContent()
+    on_leave: root.increase()
+    BoxLayout:
+        orientation: 'vertical'
+        id: vengefulBox
+        Label:
+            size_hint: (1, .3)
+            id: vengefulLabel
+            text: 'Take a shot. Aint like you gotta live with yourself afterwards '
+            halign: 'center'
+            valign: 'middle'
+        GridLayout:
+            id: vengefulGrid
+            cols: 3
+            padding: 30
+            spacing: 20
 
-<flipLabel@Label>:
+<endGame>
+    BoxLayout:
+        Label:
+            text: 'This is the end'
+        Button:
+            text: 'Play again'
+            on_press: root.reset()
