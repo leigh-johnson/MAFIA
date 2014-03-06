@@ -1,7 +1,7 @@
 
 #global rules
 <Button, Label>
-    font_size: 30
+    font_size: 20
 
 
 <HUD@ActionBar>:
@@ -16,7 +16,6 @@
             text: 'Btn1'
             on_press:
         ActionGroup:
-            text: 'Help'
             ActionButton:
                 text: 'Tutorial'
             ActionButton:
@@ -34,7 +33,7 @@
         Button:
             size_hint: (1, .2)
             text: 'Start'
-            on_press: root.manager.current = 'roleDistribution'
+            on_press: root.manager.current = 'setNumber'
 
 <setNumber>
     BoxLayout:
@@ -46,7 +45,7 @@
             value: 8
             orientation: 'horizontal'
         Button:
-            text: 'Number of ? %s'  % int(playerNumberSlider.value)
+            text: 'Start game for %s players'  % int(playerNumberSlider.value)
             on_press: root.store()
             on_press: root.manager.current = 'setSetup'
 
@@ -85,7 +84,7 @@
             cols: 3
             padding: 30
             spacing: 20
-            id: roleLayout
+            id: roleGrid
         Label:
             text: 'View your role'
             size_hint: (1, .2)
@@ -93,12 +92,23 @@
 <deadlineTimer>
     on_enter: root.buildContent()
     BoxLayout:
-        id: deadlineTimer
+        orientation: 'vertical'
+        id: deadlineBox
         Label:
-            #text: 'With %(living)s alive, the lynch threshold is %(threshold)s' % {'living': len(app.aliveList), 'threshold': len(app.aliveList)/2}
-
+            id: thresholdLabel
+        Label:
+            size_hint: (1, .2)
+            text: 'Today ends in: '
 <Flip>
     on_enter: root.buildContent()
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation:'vertical'
+            id: flipBox
+        Button:
+            text: 'Continue'
+            on_press: root.resolver()
 <Day>
     on_enter:root.buildContent()
     BoxLayout:
@@ -113,9 +123,21 @@
             padding: 30
             spacing: 20
 
+<Night>
+    on_enter: root.buildContent()
+    BoxLayout:
+        id: nightBox
+        orientation: 'vertical'
+        Label:
+            text: 'Pass the device in a circle, input your action'
+            size_hint:(1, .2)
+        GridLayout:
+            id: nightGrid
+            cols: 3
+            padding: 30
+            spacing: 20
 <vengefulKill>
     on_enter: root.buildContent()
-    on_leave: root.increase()
     BoxLayout:
         orientation: 'vertical'
         id: vengefulBox
@@ -131,10 +153,23 @@
             padding: 30
             spacing: 20
 
-<endGame>
+<hitoKill>
+    on_enter: root.buildContent()
     BoxLayout:
+        GridLayout:
+            id: hitoGrid
+<endGame>
+    on_enter: root.buildContent()
+    BoxLayout:
+        orientation: 'vertical'
         Label:
-            text: 'This is the end'
+            id: endGameLabel
         Button:
             text: 'Play again'
             on_press: root.reset()
+
+<twilightTimer>
+    on_enter: root.buildContent()
+    BoxLayout:
+        orientation:'vertical'
+        id: twilightBox

@@ -5,6 +5,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.slider import Slider
 from kivy.uix.button import Button
+from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -41,11 +42,7 @@ Gamma = Player()
 
 dummyList = [Reck, Fate, Nuwen, Hito, Brock]
 
-######
-
-#gameValues = JsonStore('gameValues.json')
 gameSetups = JsonStore('gameSetups.json')
-players = JsonStore('players.json')
 
 class TimerButton(Button):
 
@@ -60,11 +57,14 @@ class TimerButton(Button):
     def timeCall(self, dt):
         if self.seconds > 0:
             self.seconds -= 1
-            self.text = "Day ends in: %s seconds" % self.seconds
+            self.text = "Time left: %s seconds" % self.seconds
             Clock.schedule_once(self.timeCall, 1)
-        else:
+        elif Mafia.phase == 'day':
             sm.add_widget(Day(name='Day %s' % Mafia.dayCount))
             sm.current = 'Day %s' % Mafia.dayCount
+        elif Mafia.phase == 'night':
+            sm.add_widget(Night(name='Night %s' % Mafia.nightCount))
+            sm.current = 'Night %s' % Mafia.nightCount
 
 class multiLineLabel(Label):
     def __init__(self, **kw):
@@ -90,6 +90,7 @@ class setSetup(Screen):
 
     #to-do: add image src to gameSetup arrays
     def buildContent(self):
+        self.ids.setupAccordion.clear_widgets(children=self.ids.setupAccordion.children)
         setupList = []
         for key in gameSetups.keys():
             if gameSetups.get(key).get('playerNumber') == Mafia.playerNumber:
@@ -108,6 +109,7 @@ class setSetup(Screen):
 class setPlayers(Screen):
 
     def buildContent(self):
+        self.ids.playerGrid.clear_widgets(children=self.ids.playerGrid.children)
         for i in range(Mafia.playerNumber):
             text = TextInput(hint_text='Enter player name', multiline=False, focus=True)
             self.ids.playerGrid.add_widget(text)
@@ -120,7 +122,6 @@ class setPlayers(Screen):
             player.name = child.text
             #add Player() to aliveList
             Mafia.aliveList.append(player)
-
 
 class roleDistribution(Screen):
 
@@ -151,12 +152,12 @@ class roleDistribution(Screen):
             roleList.pop(0)
 
     def buildContent(self):
-
+        self.ids.roleGrid.clear_widgets(children=self.ids.roleGrid.children)
         for player in Mafia.aliveList:
             roleButton = Button(text=player.name)
             roleButton.name = player.name
             roleButton.bind(on_press=self.buildPopup)
-            self.ids.roleLayout.add_widget(roleButton)
+            self.ids.roleGrid.add_widget(roleButton)
 
 
     def buildPopup(self, instance):
@@ -173,7 +174,7 @@ class roleDistribution(Screen):
             if player.role == 'Mason':
                 #search for other masons
                 partners = []
-                for entry in aliveList:
+                for entry in Mafia.aliveList:
                     if entry.role == 'Mason':
                         partners.append(entry)
                 partners[:] = [i for i in partners if i != instance.text]
@@ -200,37 +201,74 @@ class roleDistribution(Screen):
         rolePopup.open()
 
     def removeButton(self, instance):
-        '''Removes a child of ids.roleLayout, playerName passed as instance.name'''
+        '''Removes a child of ids.roleGrid, playerName passed as instance.name'''
         '''Implemented to avoid awkward situations where user has access to already-viewed roles'''
         #instance of RolePopup()
-        for child in self.ids.roleLayout.children:
+        for child in self.ids.roleGrid.children:
             if child.name == instance.name:
-                self.ids.roleLayout.remove_widget(child)
+                self.ids.roleGrid.remove_widget(child)
         #after all the roles are distributed, add a Start button
-        if self.ids.roleLayout.children == []:
+        if self.ids.roleGrid.children == []:
             sm.current = 'deadlineTimer'
 
 class deadlineTimer(Screen):
     '''Counts down from settings.deadline'''
     def buildContent(self):
-        self.add_widget(TimerButton(2))
+        self.ids.thresholdLabel.text = 'With %(alive)s living, it takes %(threshold)s to lynch' % {'alive': len(Mafia.aliveList), 'threshold' : len(Mafia.aliveList)/2 +1}
+        self.ids.deadlineBox.add_widget(TimerButton(2))
 
 class Flip(Screen):
 
     def buildContent(self):
-        print Mafia.deadList[-1].name + 'is dead'
-        #continue
-        pass
-        #flipLabel= multiLineLabel(text='%(name)s is dead, he was a %(role)s aligned with the %(faction)s'
-        #% {'name' : entry.name, 'role' : entry.role, 'faction': entry.faction}, font_size=20,
-        #halign='center', valign='middle')
+        self.ids.flipBox.clear_widgets(children=self.ids.flipBox.children)
+        entry = Mafia.deadList[-1]
+        flipLabel= multiLineLabel(text='%(name)s is dead, he was a %(role)s aligned with the %(faction)s'
+        % {'name' : entry.name, 'role' : entry.role, 'faction': entry.faction}, font_size=20,
+        halign='center', valign='middle')
 
-        #button = multiLineButton(text='Continue', size=(1, .3), halign='center', valign='middle')
+        button = multiLineButton(text='Continue', size=(1, .3), halign='center', valign='middle')
+        button.bind(on_press=self.resolver)
+        self.ids.flipBox.add_widget(flipLabel)
+
+    def resolver(self):
+        '''Routes to the next Screen depending on fulfilled wincons, setup variant'''
+        if self.winCheck() == True:
+            if Mafia.setup == 'Vengeful' and len(Mafia.deadList) == 1:
+                if Mafia.deadList[0].faction == 'Town' and len(Mafia.deadList) == 1:
+                    sm.add_widget(vengefulKill(name='vengefulKill'))
+                    sm.current = 'vengefulKill'
+                else:
+                    sm.current = 'deadlineTimer'
+            elif gameSetups.get(Mafia.setup). get('nightkill') == True:
+                Mafia.phase = 'night'
+                sm.current = 'twilightTimer'
+            else:
+                sm.current = 'deadlineTimer'
+        else:
+            sm.current = 'endGame'
+
+    def winCheck(self):
+        ongoing = True
+        if Mafia.setup == 'Vengeful' and len(Mafia.deadList) == 1:
+            #lynching the Godfather ends the game
+            if len(Mafia.deadList) == 1 and Mafia.deadList[0].role == 'Godfather':
+                Mafia.winningTeam = 'Town'
+                ongoing = False
+        #living mafia outnumber or equal living town
+        elif (len([entry for entry in Mafia.aliveList if entry.faction =='Mafia']) >= len([entry for entry in Mafia.aliveList if entry.faction == 'Town'])):
+            Mafia.winningTeam = 'Mafia'
+            ongoing = False
+        #ll mafia are dead
+        elif len([entry for entry in Mafia.aliveList if entry.faction =='Mafia']) == 0:
+            Mafia.winningTeam = 'Town'
+            ongoing = False
+        return ongoing
 
 
 class Day(Screen):
 
     def buildContent(self):
+        self.ids.dayGrid.clear_widgets(children=self.ids.dayGrid.children)
         for entry in Mafia.aliveList:
             playerButton = Button(text=entry.name)
             playerButton.bind(on_press=self.update)
@@ -246,45 +284,94 @@ class Day(Screen):
                 print (instance.text + ' is dead')
                 Mafia.deadList.append(entry)
                 Mafia.aliveList.remove(entry)
+        Mafia.dayCount = Mafia.dayCount + 1
         sm.current = 'Flip'
 
-    def increase(self, instance):
-        Mafia.dayCount += 1
+class Night(Screen):
 
-    def router(self, instance):
-        '''Determines which screen to display next'''
-        #is the game over?
-        while self.winCheck == False:
-            #check for Vengeful kill
-            if Mafia.setup == 'Vengeful' and instance.entry.faction == 'Town' and Mafia.dayCount == 1 :
-                sm.add_widget(vengefulKill(name='vengefulKill'))
-                sm.current = 'vengefulKill'
-            #if Hito's 8p
-            #check for night phase
-            elif gameSetups.get(Mafia.setup). get('nightkill') == True:
-                sm.add_widget(Night(name='Night %s' % Mafia.nightCount))
-                sm.current = 'Night %s' % Mafia.nightCount
-            #the rest are nightless
-            else:
-                sm.current = 'deadlineTimer'
-
-
-    def winCheck(self, instance):
-        '''Checks if any win conditions are met, returns boolean, updates Mafia.winningTeam'''
-        #has mafia won?
-        livingMafia = 0
+    #tracks kill; if one member preforms option will not be available in future popups
+    mafiaKill = False
+    def buildContent(self):
+        self.ids.nightGrid.clear_widgets(children=self.ids.nightGrid.children)
         for entry in Mafia.aliveList:
-            if entry.faction == 'Mafia':
-                livingMafia +=1
-        if len(Mafia.aliveList)/2 <= livingMafia:
-            Mafia.winningTeam = 'Mafia'
-            return True
-        elif len(livingMafia) == 0:
-            Mafia.winningTeam = 'Town'
-            return True
+            button = Button(text=entry.name)
+            button.bind(on_press=self.buildPopup)
+            self.ids.nightGrid.add_widget(button)
 
-        return False
+    def buildPopup(self, instance):
+        '''Builds a popup instance.text = player.name'''
+        content = BoxLayout(orientation='vertical')
+        for entry in Mafia.aliveList:
+            if entry.name == instance.text:
+                player = entry
+        popup = Popup(title=player.role, content = content,
+            size_hint=(.7, .7))
+        if gameRoles.get(player.role).get('target') == True:
+            actionGrid = GridLayout(cols=2, padding=5, spacing=5)
+            content.add_widget(actionGrid)
+            if player.faction == 'Mafia':
+                if self.mafiaKill == True:
+                    label = Label(text='One of your partners has already preformed your team kill')
+                    content.add_widget(label)
+                else:
+                    self.mafiaKill = True
+                    label = Label(text='Preform the Mafia faction kill.', size_hint=(1, .2))
+                    content.add_widget(label)
+                    for entry in [i for i in Mafia.aliveList if i.faction == 'Town']:
+                        button = Button(text=entry.name)
+                        button.action = 'kill'
+                        button.bind(on_press=self.update)
+                        actionGrid.add_widget(button)
+            elif player.role == 'Doctor':
+                label = Label(text=gameRoles.get('Doctor').get('info'), size_hint=(1, .2))
+                for entry in [i for i in Mafia.aliveList if i.name != player.name]:
+                    button = Button(text=entry.name)
+                    button.action = 'protect'
+                    button.bind(on_press=self.update)
+                    actionGrid.add_widget(button)
+            elif player.role == 'Cop':
+                label = Label(text=gameRoles.get('Cop').get('info'), size_hint=(1, .2))
+                for entry in [i for i in Mafia.aliveList if i.name != player.name]:
+                    button = Button(text=entry.name)
+                    button.action = 'investigate'
+                    button.bind(on_press=self.investigate)
+                    button.bind(on_press=self.clearGrid)
+                    actionGrid.add_widget(button)
+        else:
+            button = ToggleButton(text='You do not have a night action, so here is a button to press.',
+                font_size=15, size_hint=(1,1))
+            button.bind(on_press=self.toggleState)
+            content.add_widget(button)
+        popup.open()
 
+    def clearGrid(self, instance):
+        '''Clears the actionGrid after Cop result target is selected'''
+        self.ids.actionGrid.remove_widget(children=[i for i in self.ids.actionGrid.children if i.text != instance.text])
+    def toggleState(self, instance):
+        instance.text = 'You did it!'
+    def investigate(self, instance):
+        '''Returns an investigation result'''
+        for entry in Mafia.aliveList:
+            if instance.text == entry.name:
+                player = entry
+        if player.faction == 'Town':
+            instance.text = 'Town'
+        elif player.faction == 'Mafia':
+            instance.text = 'Mafia'
+
+    def update(self, instance):
+        print('%(action)s on %(player)s' % {'action': instance.action, 'player': instance.text})
+
+    def removeButton(self, instance):
+        '''Removes a child of ids.actionGrid, playerName passed as instance.text'''
+        '''Implemented to avoid awkward situations where user has access to already-viewed roles'''
+        #instance of RolePopup()
+        for child in self.ids.roleGrid.children:
+            if child.text == instance.text:
+                self.ids.roleGrid.remove_widget(child)
+        #after all the roles are distributed, add a Start button
+        if self.ids.roleGrid.children == []:
+            print('resolve the actions')
 class vengefulKill(Screen):
     '''A modified night action Screen'''
 
@@ -299,37 +386,56 @@ class vengefulKill(Screen):
         self.ids.vengefulGrid.clear_widgets(children=self.ids.vengefulGrid.children)
         for entry in Mafia.aliveList:
             if instance.text == entry.name:
-                dead = entry
-                entry.status = 'dead'
-                self.ids.vengefulLabel.text = '%(name)s, %(faction)s %(role)s is dead. RIP' % {'name' : entry.name, 'faction':entry.faction, 'role': entry.role}
                 Mafia.deadList.append(entry)
                 Mafia.aliveList.remove(entry)
-        if dead.faction == 'Town':
-            self.ids.vengefulLabel.text += ('\n The game is over')
-            Mafia.winningTeam = 'Mafia'
-            button = Button(text='Summary')
-            button.bind(on_press=self.summary)
-            print ('The game is over')
-        elif dead.faction == 'Mafia':
-            button = Button(text='Continue')
-            button.bind(on_press=self.test)
-            self.ids.vengefulBox.add_widget(button)
+        sm.current = 'Flip'
 
-    def test(self, instance):
-        sm.current = 'deadlineTimer'
+class hitoKill(Screen):
 
-    def summary(self, instance):
-        sm.current = 'endGame'
-
-class Night(Screen):
-
-    def buildContent(self, instance):
+    def buildContent(self):
+        '''If town lynched Day 1, scum must kill one of their own
+        If scum lynched Day 1, scum may kill 1 town member and become lovers
+        Nightless'''
+        if Mafia.deadList[0].faction == 'Town':
+            for entry in Mafia.aliveList:
+                if entry.faction == 'Mafia':
+                    button = Button(text=entry.name)
+                    button.bind(on_press=self.update)
+                    self.ids.hitoGrid.add_widget(button)
+        else:
+            for entry in Mafia.aliveList:
+                if entry.faction == 'Town':
+                    button = Button(text=entry.name)
+                    button.bind(on_press=self.update)
+                    self.ids.hitoGrid.add_widget(button)
+    def update(self, instance):
         pass
 
 class endGame(Screen):
 
-    def reset(self, instance):
-        pass
+    def buildContent(self):
+        self.ids.endGameLabel.text = '%s faction is victorious!' % Mafia.winningTeam
+
+    def reset(self):
+        Mafia.phase = 'day'
+        Mafia.dayCount = 1
+        Mafia.nightCount = 1
+        Mafia.aliveList[:] = []
+        Mafia.deadList[:] = []
+        Mafia.setup = StringProperty()
+        Mafia.playerNumber = NumericProperty(0)
+        winningTeam = ''
+        sm.current = 'titleScreen'
+
+class twilightTimer(Screen):
+
+    def buildContent(self):
+        #value provided by settings
+        self.ids.twilightBox.add_widget(multiLineLabel(
+            text='Heads down, Mafia look up. Everybody may wake up when the buzzer rings',
+            halign = 'center', valign = 'middle'))
+        self.ids.twilightBox.add_widget(TimerButton(2))
+
 class Settings(Screen):
 
     #from kivy.uix.settings
@@ -347,23 +453,22 @@ sm.add_widget(deadlineTimer(name='deadlineTimer'))
 sm.add_widget(Night(name='Night'))
 sm.add_widget(endGame(name='endGame'))
 sm.add_widget(Flip(name='Flip'))
+sm.add_widget(twilightTimer(name='twilightTimer'))
 
 class Mafia(App):
-
+    phase = 'day' #'day' or 'night'
     dayCount = 1
     nightCount = 1
-    #playerList = []
-    aliveList = dummyList
+    aliveList = []
     deadList = []
-    #setup = StringProperty()
-    setup = 'Vengeful'
-    #playerNumber = NumericProperty()
-    playerNumber = 5
+    setup = StringProperty()
+    #setup = 'Vengeful'
+    playerNumber = NumericProperty()
+    #playerNumber = 5
     winningTeam = ''
 
 
     def build(self):
-
         root = NavigationDrawer()
 
         menu = BoxLayout(orientation='vertical')
