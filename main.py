@@ -214,7 +214,9 @@ class roleDistribution(Screen):
 class deadlineTimer(Screen):
     '''Counts down from settings.deadline'''
     def buildContent(self):
-        self.ids.thresholdLabel.text = 'With %(alive)s living, it takes %(threshold)s to lynch' % {'alive': len(Mafia.aliveList), 'threshold' : len(Mafia.aliveList)/2 +1}
+        self.ids.deadlineBox.clear_widgets(children=self.ids.deadlineBox.children)
+        self.ids.deadlineBox.add_widget(Label(text=
+        'With %(alive)s living, it takes %(threshold)s to lynch' % {'alive': len(Mafia.aliveList), 'threshold' : len(Mafia.aliveList)/2 +1}))
         self.ids.deadlineBox.add_widget(TimerButton(2))
 
 class Flip(Screen):
@@ -291,6 +293,11 @@ class Night(Screen):
 
     #tracks kill; if one member preforms option will not be available in future popups
     mafiaKill = False
+
+    killTarget = StringProperty()
+    protectTarget = StringProperty()
+    investigateTarget = StringProperty('')
+
     def buildContent(self):
         self.ids.nightGrid.clear_widgets(children=self.ids.nightGrid.children)
         for entry in Mafia.aliveList:
@@ -335,22 +342,25 @@ class Night(Screen):
                     button = Button(text=entry.name)
                     button.action = 'investigate'
                     button.bind(on_press=self.investigate)
-                    button.bind(on_press=self.clearGrid)
                     actionGrid.add_widget(button)
         else:
             button = ToggleButton(text='You do not have a night action, so here is a button to press.',
                 font_size=15, size_hint=(1,1))
             button.bind(on_press=self.toggleState)
             content.add_widget(button)
+        popup.name = instance.text
+        popup.bind(on_dismiss=self.removeButton)
         popup.open()
 
     def clearGrid(self, instance):
-        '''Clears the actionGrid after Cop result target is selected'''
+        '''Clears the actionGrid after Cop result target is selected
+        for use in vanilla cop games, where investigation result is delivered immediately'''
         self.ids.actionGrid.remove_widget(children=[i for i in self.ids.actionGrid.children if i.text != instance.text])
     def toggleState(self, instance):
         instance.text = 'You did it!'
     def investigate(self, instance):
-        '''Returns an investigation result'''
+        '''Returns an investigation result
+        for use in vanilla cop games, where investigation result is delivered immediately'''
         for entry in Mafia.aliveList:
             if instance.text == entry.name:
                 player = entry
@@ -360,18 +370,42 @@ class Night(Screen):
             instance.text = 'Mafia'
 
     def update(self, instance):
+        '''Updates Night class instance attributes for resolver logic'''
         print('%(action)s on %(player)s' % {'action': instance.action, 'player': instance.text})
+        if instance.action == 'kill':
+            self.killTarget = instance.text
+        elif instance.action == 'protect':
+            self.protectTarget = instance.text
+        elif instance.action == 'investigate':
+            self.investigateTarget = instance.text
 
     def removeButton(self, instance):
         '''Removes a child of ids.actionGrid, playerName passed as instance.text'''
         '''Implemented to avoid awkward situations where user has access to already-viewed roles'''
         #instance of RolePopup()
-        for child in self.ids.roleGrid.children:
-            if child.text == instance.text:
-                self.ids.roleGrid.remove_widget(child)
+        for child in self.ids.nightGrid.children:
+            if child.text == instance.name:
+                self.ids.nightGrid.remove_widget(child)
         #after all the roles are distributed, add a Start button
-        if self.ids.roleGrid.children == []:
-            print('resolve the actions')
+        if self.ids.nightGrid.children == []:
+            self.resolver()
+
+    def resolver(self):
+        '''Resolves night actions, updates Mafia.aliveList & deadList to reflect results
+        proceeds to flip'''
+        if self.protectTarget == self.killTarget:
+            print('no kill tonight')
+            sm.current = 'protectScreen'
+        else:
+            print('Going to the flip screen')
+            for target in Mafia.aliveList:
+                if target.name == self.killTarget:
+                    Mafia.deadList.append(target)
+                    Mafia.aliveList.remove(target)
+                    sm.current = 'Flip'
+
+class protectScreen(Screen):
+    pass
 class vengefulKill(Screen):
     '''A modified night action Screen'''
 
@@ -454,6 +488,7 @@ sm.add_widget(Night(name='Night'))
 sm.add_widget(endGame(name='endGame'))
 sm.add_widget(Flip(name='Flip'))
 sm.add_widget(twilightTimer(name='twilightTimer'))
+sm.add_widget(protectScreen(name='protectScreen'))
 
 class Mafia(App):
     phase = 'day' #'day' or 'night'

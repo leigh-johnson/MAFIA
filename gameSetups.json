@@ -60,22 +60,6 @@
         "Town_Mason",
         "Town_Mason"]
   },
-  "Macho Cop & Doctor": {
-    "description": "A setup with thoughtful night actions for 7 players. 2 Mafia face down 5 Town with special roles: Town Doctor and Macho Cop. The Macho Cop can be protected by the Town Doctor.",
-    "nightkill": true,
-    "twilightStop": "None",
-    "dayStart": true,
-    "playerNumber": 7,
-    "roles" : [
-        "Town_Citizen",
-        "Town_Citizen",
-        "Town_Citizen",
-        "Town_Macho Cop",
-        "Town_Doctor",
-        "Mafia_Goon",
-        "Mafia_Goon"
-        ]
-  },
 "Cop & Vanilla OR Masons" : {
       "description": "This setup features two Mafia against randomly generated town powers: Town Cop & a Citizen OR a pair of masons.",
       "nightkill": true,

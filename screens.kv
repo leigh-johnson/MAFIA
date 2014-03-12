@@ -136,6 +136,13 @@
             cols: 3
             padding: 30
             spacing: 20
+
+<protectScreen>
+    Label:
+        text: 'Night breaks and all are alive'
+    Button:
+        text: 'Continue'
+        on_press: root.manager.current = 'deadlineTimer'
 <vengefulKill>
     on_enter: root.buildContent()
     BoxLayout:
