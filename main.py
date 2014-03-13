@@ -49,7 +49,7 @@ class TimerButton(Button):
     def __init__(self, seconds, **kwargs):
         super(TimerButton, self).__init__(**kwargs)
         self.seconds = seconds
-        self.text = 'Start Day: %s seconds' %self.seconds
+        self.text = 'Phase ends in %s seconds' %self.seconds
 
     def on_press(self):
         Clock.schedule_once(self.timeCall, 1)
@@ -195,8 +195,13 @@ class roleDistribution(Screen):
             content.add_widget(Label(text=('Hello, ' + player.name + ' You are teamed up with:  [b]%s[/b]' % partnerStr), markup=True,
             halign='center', valign='middle'))
         rolePopup = Popup(title =player.role, content=content,
-            size_hint=(.6, .6))
+            size_hint=(.6, .6), auto_dismiss=False)
         rolePopup.name = instance.text
+        #dismissButton = Button(text='Destroy this message')
+        #dismissButton.bind(on_press=rolePopup.dismiss)
+        button = Button(text='Destroy this message')
+        content.add_widget(button)
+        button.bind(on_press=rolePopup.dismiss)
         rolePopup.bind(on_dismiss=self.removeButton)
         rolePopup.open()
 
@@ -234,6 +239,7 @@ class Flip(Screen):
 
     def resolver(self):
         '''Routes to the next Screen depending on fulfilled wincons, setup variant'''
+        #if game is still ongoing
         if self.winCheck() == True:
             if Mafia.setup == 'Vengeful' and len(Mafia.deadList) == 1:
                 if Mafia.deadList[0].faction == 'Town' and len(Mafia.deadList) == 1:
@@ -242,8 +248,12 @@ class Flip(Screen):
                 else:
                     sm.current = 'deadlineTimer'
             elif gameSetups.get(Mafia.setup). get('nightkill') == True:
-                Mafia.phase = 'night'
-                sm.current = 'twilightTimer'
+                if Mafia.phase == 'day':
+                    sm.current = 'twilightTimer'
+                    Mafia.phase = 'night'
+                elif Mafia.phase == 'night':
+                    sm.current = 'deadlineTimer'
+                    Mafia.phase = 'day'
             else:
                 sm.current = 'deadlineTimer'
         else:
@@ -312,10 +322,12 @@ class Night(Screen):
             if entry.name == instance.text:
                 player = entry
         popup = Popup(title=player.role, content = content,
-            size_hint=(.7, .7))
+            size_hint=(.7, .7), auto_dismiss=False)
+        dismissButton = Button(size_hint=(1, .3), text='Take no action')
         if gameRoles.get(player.role).get('target') == True:
             actionGrid = GridLayout(cols=2, padding=5, spacing=5)
             content.add_widget(actionGrid)
+            #adds feedback to button text
             if player.faction == 'Mafia':
                 if self.mafiaKill == True:
                     label = Label(text='One of your partners has already preformed your team kill')
@@ -325,10 +337,13 @@ class Night(Screen):
                     label = Label(text='Preform the Mafia faction kill.', size_hint=(1, .2))
                     content.add_widget(label)
                     for entry in [i for i in Mafia.aliveList if i.faction == 'Town']:
-                        button = Button(text=entry.name)
+                        button = ToggleButton(text=entry.name, group='Town')
                         button.action = 'kill'
                         button.bind(on_press=self.update)
+                        button.bind(on_press=self.clearGrid)
                         actionGrid.add_widget(button)
+                        dismissButton.text = ('Submit action: %(action)s %(target)s ' %
+                        {'action': button.action, 'target': self.killTarget})
             elif player.role == 'Doctor':
                 label = Label(text=gameRoles.get('Doctor').get('info'), size_hint=(1, .2))
                 for entry in [i for i in Mafia.aliveList if i.name != player.name]:
@@ -344,18 +359,15 @@ class Night(Screen):
                     button.bind(on_press=self.investigate)
                     actionGrid.add_widget(button)
         else:
-            button = ToggleButton(text='You do not have a night action, so here is a button to press.',
-                font_size=15, size_hint=(1,1))
-            button.bind(on_press=self.toggleState)
-            content.add_widget(button)
+            content.add_widget(Label(text='Hello %s' % player.name))
         popup.name = instance.text
+        content.add_widget(dismissButton)
+        dismissButton.bind(on_press=popup.dismiss)
         popup.bind(on_dismiss=self.removeButton)
         popup.open()
 
     def clearGrid(self, instance):
-        '''Clears the actionGrid after Cop result target is selected
-        for use in vanilla cop games, where investigation result is delivered immediately'''
-        self.ids.actionGrid.remove_widget(children=[i for i in self.ids.actionGrid.children if i.text != instance.text])
+        '''Clears the actionGrid except for instance'''
     def toggleState(self, instance):
         instance.text = 'You did it!'
     def investigate(self, instance):
@@ -393,6 +405,7 @@ class Night(Screen):
     def resolver(self):
         '''Resolves night actions, updates Mafia.aliveList & deadList to reflect results
         proceeds to flip'''
+        Mafia.nightCount = Mafia.nightCount+1
         if self.protectTarget == self.killTarget:
             print('no kill tonight')
             sm.current = 'protectScreen'
@@ -464,6 +477,7 @@ class endGame(Screen):
 class twilightTimer(Screen):
 
     def buildContent(self):
+        self.ids.twilightBox.clear_widgets(children=self.ids.twilightBox.children)
         #value provided by settings
         self.ids.twilightBox.add_widget(multiLineLabel(
             text='Heads down, Mafia look up. Everybody may wake up when the buzzer rings',
