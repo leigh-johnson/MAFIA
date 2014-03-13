@@ -195,7 +195,7 @@ class roleDistribution(Screen):
             content.add_widget(Label(text=('Hello, ' + player.name + ' You are teamed up with:  [b]%s[/b]' % partnerStr), markup=True,
             halign='center', valign='middle'))
         rolePopup = Popup(title =player.role, content=content,
-            size_hint=(.6, .6), auto_dismiss=False)
+            size_hint=(.8, .8), auto_dismiss=False)
         rolePopup.name = instance.text
         #dismissButton = Button(text='Destroy this message')
         #dismissButton.bind(on_press=rolePopup.dismiss)
@@ -322,7 +322,7 @@ class Night(Screen):
             if entry.name == instance.text:
                 player = entry
         popup = Popup(title=player.role, content = content,
-            size_hint=(.7, .7), auto_dismiss=False)
+            size_hint=(.8, .8), auto_dismiss=False)
         dismissButton = Button(size_hint=(1, .3), text='Take no action')
         if gameRoles.get(player.role).get('target') == True:
             actionGrid = GridLayout(cols=2, padding=5, spacing=5)
@@ -340,7 +340,6 @@ class Night(Screen):
                         button = ToggleButton(text=entry.name, group='Town')
                         button.action = 'kill'
                         button.bind(on_press=self.update)
-                        button.bind(on_press=self.clearGrid)
                         actionGrid.add_widget(button)
                         dismissButton.text = ('Submit action: %(action)s %(target)s ' %
                         {'action': button.action, 'target': self.killTarget})
@@ -357,6 +356,7 @@ class Night(Screen):
                     button = Button(text=entry.name)
                     button.action = 'investigate'
                     button.bind(on_press=self.investigate)
+                    button.bind(on_press=self.clearGrid)
                     actionGrid.add_widget(button)
         else:
             content.add_widget(Label(text='Hello %s' % player.name))
@@ -368,6 +368,8 @@ class Night(Screen):
 
     def clearGrid(self, instance):
         '''Clears the actionGrid except for instance'''
+        instance.unbind(on_press=self.investigate)
+        instance.parent.clear_widgets(children=[i for i in instance.parent.children if i != instance])
     def toggleState(self, instance):
         instance.text = 'You did it!'
     def investigate(self, instance):
