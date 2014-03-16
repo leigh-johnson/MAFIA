@@ -5,3 +5,7 @@ venv/
 *.pyc
 
 .gitignore
+
+test*.*
+
+mafia.nja

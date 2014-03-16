@@ -76,6 +76,10 @@ class multiLineButton(Button):
         super(multiLineButton, self).__init__(**kw)
         self.bind(size=self.setter('text_size'))
 
+class IconButton(Button):
+    '''subclass created for buttons with icon overlay'''
+    icon = StringProperty()
+
 class titleScreen(Screen):
     def wipeJson(self):
         pass
@@ -524,7 +528,7 @@ class Mafia(App):
 
         menu = BoxLayout(orientation='vertical')
 
-        resetButton = Button(text='New Game')
+        resetButton = Button(text='New Game', background_disabled_normal='/img/flat-reset.png')
         settingsButton = Button(text='Settings')
         helpButton = Button(text='Help')
         menu.add_widget(resetButton)
@@ -533,13 +537,14 @@ class Mafia(App):
 
         root.add_widget(menu)
 
-        content = BoxLayout(orientation='horizontal')
+        content = BoxLayout(orientation='vertical')
 
-        toggleButton = Button (text='Menu', size_hint=(.2, 1))
+        toggleButton = IconButton (size_hint=(.1, .15), icon="atlas://img/iconatlas/icon-menu")
         toggleButton.bind(on_press=lambda j: root.toggle_state())
 
-        content.add_widget(sm)
+
         content.add_widget(toggleButton)
+        content.add_widget(sm)
         root.add_widget(content)
         sm.current = 'titleScreen'
         return root
