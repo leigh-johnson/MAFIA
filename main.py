@@ -3,6 +3,8 @@ from kivy.clock import Clock
 from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.stacklayout import StackLayout
 from kivy.uix.slider import Slider
 from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
@@ -112,7 +114,10 @@ class setSetup(Screen):
 
 class setPlayers(Screen):
 
+    defaultName = 0
     def buildContent(self):
+        #reset
+        self.defaultName = 0
         self.ids.playerGrid.clear_widgets(children=self.ids.playerGrid.children)
         for i in range(Mafia.playerNumber):
             text = TextInput(hint_text='Enter player name', multiline=False, focus=True)
@@ -122,6 +127,10 @@ class setPlayers(Screen):
         '''Creates a Player(), stores it in Mafia.aliveList'''
         #iterate over TextInput() for .text
         for child in self.ids.playerGrid.children:
+            #if the field is empty, assign name Player i
+            if child.text == '':
+                child.text = 'Player %s' % self.defaultName
+                self.defaultName += 1
             player = Player()
             player.name = child.text
             #add Player() to aliveList
@@ -469,16 +478,6 @@ class endGame(Screen):
     def buildContent(self):
         self.ids.endGameLabel.text = '%s faction is victorious!' % Mafia.winningTeam
 
-    def reset(self):
-        Mafia.phase = 'day'
-        Mafia.dayCount = 1
-        Mafia.nightCount = 1
-        Mafia.aliveList[:] = []
-        Mafia.deadList[:] = []
-        Mafia.setup = StringProperty()
-        Mafia.playerNumber = NumericProperty(0)
-        winningTeam = ''
-        sm.current = 'titleScreen'
 
 class twilightTimer(Screen):
 
@@ -522,6 +521,16 @@ class Mafia(App):
     #playerNumber = 5
     winningTeam = ''
 
+    def reset(self, instance):
+        Mafia.phase = 'day'
+        Mafia.dayCount = 1
+        Mafia.nightCount = 1
+        Mafia.aliveList[:] = []
+        Mafia.deadList[:] = []
+        Mafia.setup = StringProperty()
+        Mafia.playerNumber = NumericProperty(0)
+        winningTeam = ''
+        sm.current = 'titleScreen'
 
     def build(self):
         root = NavigationDrawer()
@@ -534,17 +543,18 @@ class Mafia(App):
         menu.add_widget(resetButton)
         menu.add_widget(settingsButton)
         menu.add_widget(helpButton)
+        resetButton.bind(on_press=self.reset)
 
         root.add_widget(menu)
 
-        content = BoxLayout(orientation='vertical')
+        content = GridLayout(cols=2, rows=2)
 
-        toggleButton = IconButton (size_hint=(.1, .15), icon="atlas://img/iconatlas/icon-menu")
+        toggleButton = IconButton (icon="atlas://img/iconatlas/icon-menu", size_hint=(.1, .1))
         toggleButton.bind(on_press=lambda j: root.toggle_state())
 
 
-        content.add_widget(toggleButton)
         content.add_widget(sm)
+        content.add_widget(toggleButton)
         root.add_widget(content)
         sm.current = 'titleScreen'
         return root

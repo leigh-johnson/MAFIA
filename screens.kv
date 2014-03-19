@@ -2,7 +2,7 @@
 #global rules
 <Button, Label>
     font_size: 20
-    #background_normal: "atlas://img/iconatlas/button"
+    background_normal: "atlas://img/imgatlas/button"
     #background_down:"atlas://img/iconatlas/button"
 
 <IconButton>:
@@ -39,7 +39,7 @@
         Image:
             source: 'logo.png'
         Button:
-            size_hint: (1, .2)
+            height: 100
             text: 'Start'
             on_press: root.manager.current = 'setNumber'
 
@@ -53,6 +53,7 @@
             value: 8
             orientation: 'horizontal'
         Button:
+            size_hint:(1, .2)
             text: 'Start game for %s players'  % int(playerNumberSlider.value)
             on_press: root.store()
             on_press: root.manager.current = 'setSetup'
@@ -180,8 +181,7 @@
         Label:
             id: endGameLabel
         Button:
-            text: 'Play again'
-            on_press: root.reset()
+            text: 'Game summary goes here, then gets stored'
 
 <twilightTimer>
     on_enter: root.buildContent()
