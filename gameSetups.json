@@ -1,5 +1,6 @@
 {
   "Vengeful": {
+      "src" : "img/setup/vengeful.png",
     "description": "A quick nightless setup for 5 players featuring 3 vanilla town, a goon scum, a Godfather, and special Day 1 mechanics. If town is lynched Day 1, that townie may shoot another player. If the Godfather is lynched on Day 1, the town wins by default.",
     "nightkill": false,
     "twilightStop": true,
@@ -13,6 +14,7 @@
         "Mafia_Goon"]
   },
   "Speed by Hito": {
+    "src" : "img/setup/hitospeed.png",
     "description": "A nightless setup with two possible outcomes to Day 1: if Town is lynched, Maifa must immediately kill one of their own. If a Mafia member is lynched Day 1, the remaining Mafia may kill 1 Town immediately.",
     "nightkill": false,
     "twilightStop": true,
@@ -30,6 +32,7 @@
         ]
   },
   "Vanilla Nightless": {
+      "src" : "img/setup/vanillanightless.png",
     "description": "A nightless setup for 6 players.",
     "nightkill": false,
     "twilightStop": false,
@@ -45,6 +48,7 @@
         ]
   },
   "Masons & Mafia": {
+     "src" : "img/setup/masonsmafia8.png",
     "description": "A skill-intensive setup for 8 players, featuring 2 Town Masons and 2 Mafia.",
     "nightkill": true,
     "twilightStop": false,
@@ -61,6 +65,7 @@
         "Town_Mason"]
   },
 "Cop & Vanilla OR Masons" : {
+    "src" : "img/setup/copmasons9.png",
       "description": "This setup features two Mafia against randomly generated town powers: Town Cop & a Citizen OR a pair of masons.",
       "nightkill": true,
       "twilightStop": "None",
@@ -77,5 +82,24 @@
           "Mafia_Goon",
           "Mafia_Goon"
           ]
-      }
+      },
+"Masons & Mafia 12" :{
+    "src" : "img/setup/masonsmafia12.png",
+    "description": "Masons & mafia for 12",
+    "nightkill": true,
+    "playerNumber": 12,
+    "roles" : [
+        "Town_Mason",
+        "Town_Mason",
+        "Town_Mason",
+        "Town_Citizen",
+        "Town_Citizen",
+        "Town_Citizen",
+        "Town_Citizen",
+        "Town_Citizen",
+        "Town_Citizen",
+         "Mafia_Goon",
+          "Mafia_Goon",
+           "Mafia_Goon"]}
+
 }

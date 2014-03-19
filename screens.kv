@@ -2,7 +2,7 @@
 #global rules
 <Button, Label>
     font_size: 20
-    background_normal: "atlas://img/imgatlas/button"
+    #background_normal: "atlas://img/imgatlas/button"
     #background_down:"atlas://img/iconatlas/button"
 
 <IconButton>:
@@ -49,14 +49,13 @@
         Slider:
             step: 1
             id: playerNumberSlider
-            range: (5, 9)
+            range: (5, 12)
             value: 8
             orientation: 'horizontal'
         Button:
             size_hint:(1, .2)
             text: 'Start game for %s players'  % int(playerNumberSlider.value)
             on_press: root.store()
-            on_press: root.manager.current = 'setSetup'
 
 <setSetup>
     on_enter: root.buildContent()

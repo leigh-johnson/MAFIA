@@ -1,6 +1,7 @@
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.accordion import Accordion, AccordionItem
+from kivy.uix.image import Image
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.anchorlayout import AnchorLayout
@@ -20,31 +21,13 @@ from kivy.garden.navigationdrawer import NavigationDrawer
 from gameRoles import gameRoles
 import random
 
+gameSetups = JsonStore('gameSetups.json')
 
 class Player():
     name = StringProperty()
     status = StringProperty() #'Alive or Dead'
     faction = StringProperty()
     role = StringProperty()
-
-######
-Reck = Player()
-Reck.name = 'Reck'
-Fate = Player()
-Fate.name = 'Fate'
-Nuwen = Player()
-Nuwen.name = 'Nuwen'
-Hito = Player()
-Hito.name = 'Hito'
-Hiro = Player()
-Brock = Player()
-Brock.name = 'Brock'
-Gamma = Player()
-
-
-dummyList = [Reck, Fate, Nuwen, Hito, Brock]
-
-gameSetups = JsonStore('gameSetups.json')
 
 class TimerButton(Button):
 
@@ -90,7 +73,13 @@ class setNumber(Screen):
 
     def store(self):
         '''Stores slider value'''
-        Mafia.playerNumber = int(self.ids.playerNumberSlider.value)
+        if self.ids.playerNumberSlider.value not in (7, 10, 11):
+            Mafia.playerNumber = int(self.ids.playerNumberSlider.value)
+            sm.current = 'setSetup'
+        else:
+            content = Label(text=("Sorry friend. There is no setup for %s players yet" % self.ids.playerNumberSlider.value))
+            popup = Popup(title="No setup available", content=content, size_hint=(.5, .5))
+            popup.open()
 
 class setSetup(Screen):
 
@@ -103,7 +92,10 @@ class setSetup(Screen):
                 setupList.append(str(key))
         for setup in setupList:
             item = AccordionItem(title=setup)
-            itemContent = multiLineLabel(text=gameSetups.get(setup).get('description'), halign='center', valign='middle')
+            itemContent = BoxLayout(orientation='vertical')
+            itemContent.add_widget(multiLineLabel(text=gameSetups.get(setup).get('description'),
+             halign='center', valign='middle'))
+            itemContent.add_widget(Image(source=gameSetups.get(setup).get('src')))
             item.add_widget(itemContent)
             self.ids.setupAccordion.add_widget(item)
 
@@ -549,7 +541,7 @@ class Mafia(App):
 
         content = GridLayout(cols=2, rows=2)
 
-        toggleButton = IconButton (icon="atlas://img/iconatlas/icon-menu", size_hint=(.1, .1))
+        toggleButton = IconButton (icon="atlas://img/icon/iconatlas/icon-menu", size_hint=(.1, .1))
         toggleButton.bind(on_press=lambda j: root.toggle_state())
 
 
