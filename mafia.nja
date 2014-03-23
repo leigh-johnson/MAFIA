@@ -1,5 +1,5 @@
 {
-  "mainFile": "", 
+  "mainFile": "main.py", 
   "use-tabs": false, 
   "venv": "/home/nuwen/MAFIA/venv/bin/python", 
   "relatedProjects": [], 
@@ -8,7 +8,10 @@
   "url": "", 
   "pythonPath": "/home/nuwen/MAFIA/venv/bin/python2.7", 
   "preExecScript": "", 
-  "additional_builtins": [], 
+  "additional_builtins": [
+    "-m", 
+    "inspector"
+  ], 
   "programParams": "", 
   "indentation": 4, 
   "PYTHONPATH": "", 

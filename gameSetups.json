@@ -47,7 +47,7 @@
         "Mafia_Goon"
         ]
   },
-  "Masons & Mafia": {
+  "Masons & Mafia_8": {
      "src" : "img/setup/masonsmafia8.png",
     "description": "A skill-intensive setup for 8 players, featuring 2 Town Masons and 2 Mafia.",
     "nightkill": true,
@@ -64,7 +64,7 @@
         "Town_Mason",
         "Town_Mason"]
   },
-"Cop & Vanilla OR Masons" : {
+"Cop & Vanilla OR Masons_9" : {
     "src" : "img/setup/copmasons9.png",
       "description": "This setup features two Mafia against randomly generated town powers: Town Cop & a Citizen OR a pair of masons.",
       "nightkill": true,
@@ -83,7 +83,23 @@
           "Mafia_Goon"
           ]
       },
-"Masons & Mafia 12" :{
+"Cop & Vanilla OR Masons_7" : {
+    "src" : "img/setup/copmasons7",
+    "description": "This setup features two Mafia against randomly generated town powers: Town Cop & a Citizen OR a pair of masons.",
+    "nightkill" : true,
+    "playerNumber" : 7,
+    "roles": [
+            "Town_Citizen-Town_Cop",
+            "Town_Mason-Town_Mason",
+            "Town_Citizen",
+            "Town_Citizen",
+             "Town_Citizen",
+             "Mafia_Goon",
+             "Mafia_Goon"
+        ]
+    },
+
+"Masons & Mafia_12" :{
     "src" : "img/setup/masonsmafia12.png",
     "description": "Masons & mafia for 12",
     "nightkill": true,

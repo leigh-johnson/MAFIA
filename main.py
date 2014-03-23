@@ -13,11 +13,14 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.textinput import TextInput
+from kivy.uix.widget import Widget
+from kivy.metrics import sp
 from kivy.factory import Factory
 from kivy.lang import Builder
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.storage.jsonstore import JsonStore
 from kivy.garden.navigationdrawer import NavigationDrawer
+from kivy.core.window import Window
 from gameRoles import gameRoles
 import random
 
@@ -33,16 +36,21 @@ class TimerButton(Button):
 
     def __init__(self, seconds, **kwargs):
         super(TimerButton, self).__init__(**kwargs)
+        self.original = seconds
         self.seconds = seconds
         self.text = 'Phase ends in %s seconds' %self.seconds
 
     def on_press(self):
-        Clock.schedule_once(self.timeCall, 1)
+        if self.seconds == self.original:
+            Clock.schedule_once(self.timeCall, 1)
+        else:
+            self.proceed()
+
 
     def timeCall(self, dt):
         if self.seconds > 0:
             self.seconds -= 1
-            self.text = "Time left: %s seconds" % self.seconds
+            self.text = "Time left: %s seconds \n Press again to Continue" % self.seconds
             Clock.schedule_once(self.timeCall, 1)
         elif Mafia.phase == 'day':
             sm.add_widget(Day(name='Day %s' % Mafia.dayCount))
@@ -50,6 +58,9 @@ class TimerButton(Button):
         elif Mafia.phase == 'night':
             sm.add_widget(Night(name='Night %s' % Mafia.nightCount))
             sm.current = 'Night %s' % Mafia.nightCount
+
+    def proceed(self):
+        print('you ended the day early')
 
 class multiLineLabel(Label):
     def __init__(self, **kw):
@@ -91,7 +102,8 @@ class setSetup(Screen):
             if gameSetups.get(key).get('playerNumber') == Mafia.playerNumber:
                 setupList.append(str(key))
         for setup in setupList:
-            item = AccordionItem(title=setup)
+            item = AccordionItem(title=setup, background_normal='atlas://img/button/buttonatlas/midnight',
+                background_selected='atlas://img/button/buttonatlas/sky')
             itemContent = BoxLayout(orientation='vertical')
             itemContent.add_widget(multiLineLabel(text=gameSetups.get(setup).get('description'),
              halign='center', valign='middle'))
@@ -159,7 +171,7 @@ class roleDistribution(Screen):
     def buildContent(self):
         self.ids.roleGrid.clear_widgets(children=self.ids.roleGrid.children)
         for player in Mafia.aliveList:
-            roleButton = Button(text=player.name)
+            roleButton = Factory.SmallTextButton(text=player.name)
             roleButton.name = player.name
             roleButton.bind(on_press=self.buildPopup)
             self.ids.roleGrid.add_widget(roleButton)
@@ -182,7 +194,7 @@ class roleDistribution(Screen):
                 for entry in Mafia.aliveList:
                     if entry.role == 'Mason':
                         partners.append(entry)
-                partners[:] = [i for i in partners if i != instance.text]
+                partners[:] = [i for i in partners if i.name != instance.text]
                 partnerStr = ''
                 for n in partners:
                     partnerStr += '\n' + n.name + ' the Mason'
@@ -204,7 +216,7 @@ class roleDistribution(Screen):
         rolePopup.name = instance.text
         #dismissButton = Button(text='Destroy this message')
         #dismissButton.bind(on_press=rolePopup.dismiss)
-        button = Button(text='Destroy this message')
+        button = Factory.SmallTextButton(text='Destroy this message')
         content.add_widget(button)
         button.bind(on_press=rolePopup.dismiss)
         rolePopup.bind(on_dismiss=self.removeButton)
@@ -225,9 +237,9 @@ class deadlineTimer(Screen):
     '''Counts down from settings.deadline'''
     def buildContent(self):
         self.ids.deadlineBox.clear_widgets(children=self.ids.deadlineBox.children)
-        self.ids.deadlineBox.add_widget(Label(text=
-        'With %(alive)s living, it takes %(threshold)s to lynch' % {'alive': len(Mafia.aliveList), 'threshold' : len(Mafia.aliveList)/2 +1}))
-        self.ids.deadlineBox.add_widget(TimerButton(2))
+        self.ids.deadlineBox.add_widget(Label(text='With %(alive)s living, it takes %(threshold)s to lynch \n Should you arrive at a decision before the timer expires, press Continue' % {'alive': len(Mafia.aliveList), 'threshold' : len(Mafia.aliveList)/2 +1},
+        valign='top', halign='center'))
+        self.ids.deadlineBox.add_widget(TimerButton(10))
 
 class Flip(Screen):
 
@@ -328,7 +340,7 @@ class Night(Screen):
                 player = entry
         popup = Popup(title=player.role, content = content,
             size_hint=(.8, .8), auto_dismiss=False)
-        dismissButton = Button(size_hint=(1, .3), text='Take no action')
+        dismissButton = Factory.SmallTextButton(size_hint=(1, .3), text='Take no action')
         if gameRoles.get(player.role).get('target') == True:
             actionGrid = GridLayout(cols=2, padding=5, spacing=5)
             content.add_widget(actionGrid)
@@ -487,6 +499,7 @@ class Settings(Screen):
     pass
 
 Builder.load_file('screens.kv')
+Builder.load_file('styles.kv')
 
 sm = ScreenManager()
 sm.add_widget(titleScreen(name='titleScreen'))
@@ -500,6 +513,8 @@ sm.add_widget(endGame(name='endGame'))
 sm.add_widget(Flip(name='Flip'))
 sm.add_widget(twilightTimer(name='twilightTimer'))
 sm.add_widget(protectScreen(name='protectScreen'))
+
+styledrawer = NavigationDrawer()
 
 class Mafia(App):
     phase = 'day' #'day' or 'night'
@@ -520,36 +535,40 @@ class Mafia(App):
         Mafia.aliveList[:] = []
         Mafia.deadList[:] = []
         Mafia.setup = StringProperty()
-        Mafia.playerNumber = NumericProperty(0)
+        Mafia.playerNumber = NumericProperty(1)
         winningTeam = ''
         sm.current = 'titleScreen'
 
     def build(self):
-        root = NavigationDrawer()
-
+        self.root = NavigationDrawer()
+        self.root.side_panel_opacity = 0
+        self.root.separator_image_width = sp(0)
         menu = BoxLayout(orientation='vertical')
 
-        resetButton = Button(text='New Game', background_disabled_normal='/img/flat-reset.png')
-        settingsButton = Button(text='Settings')
-        helpButton = Button(text='Help')
+        resetButton = Factory.GreenButton(text='New Game')
+        settingsButton = Factory.OrangeButton(text='Settings')
+        helpButton = Factory.PurpleButton(text='Help')
         menu.add_widget(resetButton)
         menu.add_widget(settingsButton)
         menu.add_widget(helpButton)
         resetButton.bind(on_press=self.reset)
 
-        root.add_widget(menu)
+        self.root.add_widget(menu)
 
-        content = GridLayout(cols=2, rows=2)
+        content = AnchorLayout(anchor_x='right', anchor_y='bottom', paddind=sp(5))
 
-        toggleButton = IconButton (icon="atlas://img/icon/iconatlas/icon-menu", size_hint=(.1, .1))
-        toggleButton.bind(on_press=lambda j: root.toggle_state())
 
+
+        toggleButton = IconButton (icon="atlas://img/icon/iconatlas/icon-menu", size_hint=(.15, .1),
+            background_normal='atlas://img/button/buttonatlas/red',
+            background_down='atlas://img/button/buttonatlas/orange')
+        toggleButton.bind(on_press=lambda j: self.root.toggle_state())
 
         content.add_widget(sm)
         content.add_widget(toggleButton)
-        root.add_widget(content)
+        self.root.add_widget(content)
         sm.current = 'titleScreen'
-        return root
+        return self.root
 
 if __name__ == '__main__':
     Mafia().run()

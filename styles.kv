@@ -1,5 +1,33 @@
-at
+#global rules
+<Button, Label>
+    font_size: sp(30)
+    halign: 'center'
+    valign: 'middle'
+    background_normal: "atlas://img/button/buttonatlas/red"
+    background_down:"atlas://img/button/buttonatlas/orange"
 
+
+<Screen>
+    canvas.before:
+        Color:
+            rgba: (.3,.3,.3, .8)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Popup>:
+    font_size: sp(15)
+
+#Buttons
+<SmallTextButton@Button>:
+    font_size: sp(15)
+
+<IconButton>:
+    canvas:
+        Rectangle:
+            source:self.icon
+            pos: self.pos
+            size: self.size
 
 <GreenButton@Button>:
     background_normal: 'atlas://img/button/buttonatlas/green'

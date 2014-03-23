@@ -148,6 +148,7 @@ from kivy.properties import (ObjectProperty, NumericProperty, OptionProperty,
 
 from kivy.lang import Builder
 
+
 Builder.load_string('''
 <NavigationDrawer>:
     size_hint: (1,1)
@@ -167,7 +168,7 @@ Builder.load_string('''
                  (1-root.side_panel_opacity)*root._anim_progress
         canvas:
             Color:
-                rgba: (0,0,0,1)
+                rgba: (.3,.3,.3,1)
             Rectangle:
                 pos: self.pos
                 size: self.size

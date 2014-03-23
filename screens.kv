@@ -1,16 +1,4 @@
 
-#global rules
-<Button, Label>
-    font_size: 20
-    #background_normal: "atlas://img/imgatlas/button"
-    #background_down:"atlas://img/iconatlas/button"
-
-<IconButton>:
-    canvas:
-        Rectangle:
-            source:self.icon
-            pos: self.center
-            size: 30,30
 
 <HUD@ActionBar>:
     pos_hint: {'top':1}
@@ -35,26 +23,32 @@
 
 <titleScreen>:
     BoxLayout:
+        padding: sp(10)
         orientation: 'vertical'
         Image:
             source: 'logo.png'
-        Button:
-            height: 100
+        RedButton:
+            size_hint: (.5, .3)
+            pos_hint: {'center_x': .5, 'center_y': .5}
             text: 'Start'
             on_press: root.manager.current = 'setNumber'
 
 <setNumber>
     BoxLayout:
         orientation: 'vertical'
+        Label:
+            font_size: sp(30)
+            halign: "center"
+            text: "How many players? \n\n%s " % int(playerNumberSlider.value)
         Slider:
             step: 1
             id: playerNumberSlider
             range: (5, 12)
             value: 8
             orientation: 'horizontal'
-        Button:
-            size_hint:(1, .2)
-            text: 'Start game for %s players'  % int(playerNumberSlider.value)
+        RedButton:
+            size_hint:(1, .3)
+            text: "Continue"
             on_press: root.store()
 
 <setSetup>
@@ -64,8 +58,9 @@
         Accordion:
             orientation: 'vertical'
             id: setupAccordion
+
         Button:
-            size_hint: (1, .2)
+            size_hint: (1, .3)
             text: 'I pick this one!'
             on_press: root.store()
             on_press: root.manager.current = 'setPlayers'
@@ -90,23 +85,18 @@
         orientation: 'vertical'
         GridLayout:
             cols: 3
-            padding: 30
+            padding: 20
             spacing: 20
             id: roleGrid
         Label:
-            text: 'View your role'
+            text: 'Pass the device around. \n View your role'
             size_hint: (1, .2)
 
 <deadlineTimer>
     on_enter: root.buildContent()
     BoxLayout:
-        orientation: 'vertical'
         id: deadlineBox
-        Label:
-            id: thresholdLabel
-        Label:
-            size_hint: (1, .2)
-            text: 'Today ends in: '
+        orientation: 'vertical'
 <Flip>
     on_enter: root.buildContent()
     BoxLayout:
