@@ -52,15 +52,16 @@ class TimerButton(Button):
             self.seconds -= 1
             self.text = "Time left: %s seconds \n Press again to Continue" % self.seconds
             Clock.schedule_once(self.timeCall, 1)
-        elif Mafia.phase == 'day':
+        else:
+            self.proceed()
+
+    def proceed(self):
+        if Mafia.phase == 'day':
             sm.add_widget(Day(name='Day %s' % Mafia.dayCount))
             sm.current = 'Day %s' % Mafia.dayCount
         elif Mafia.phase == 'night':
             sm.add_widget(Night(name='Night %s' % Mafia.nightCount))
             sm.current = 'Night %s' % Mafia.nightCount
-
-    def proceed(self):
-        print('you ended the day early')
 
 class multiLineLabel(Label):
     def __init__(self, **kw):
@@ -209,9 +210,9 @@ class roleDistribution(Screen):
                 #build a string
                 for n in partners:
                     partnerStr += '\n ' + n.name + ' the ' + n.role + '\n'
-            content.add_widget(Label(text=('Hello, ' + player.name + ' You are teamed up with:  [b]%s[/b]' % partnerStr), markup=True,
+            content.add_widget(Label(text=(' You are teamed up with:  [b]%s[/b]' % partnerStr), markup=True,
             halign='center', valign='middle'))
-        rolePopup = Popup(title =player.role, content=content,
+        rolePopup = Popup(title =('Hello, %s' % instance.name), content=content,
             size_hint=(.8, .8), auto_dismiss=False)
         rolePopup.name = instance.text
         #dismissButton = Button(text='Destroy this message')
@@ -237,8 +238,11 @@ class deadlineTimer(Screen):
     '''Counts down from settings.deadline'''
     def buildContent(self):
         self.ids.deadlineBox.clear_widgets(children=self.ids.deadlineBox.children)
-        self.ids.deadlineBox.add_widget(Label(text='With %(alive)s living, it takes %(threshold)s to lynch \n Should you arrive at a decision before the timer expires, press Continue' % {'alive': len(Mafia.aliveList), 'threshold' : len(Mafia.aliveList)/2 +1},
-        valign='top', halign='center'))
+
+        label = Label(text='With %(alive)s living, it takes %(threshold)s to lynch \n Should you arrive at a decision before the timer expires, press Continue' % {'alive': len(Mafia.aliveList), 'threshold' : len(Mafia.aliveList)/2 +1},
+            halign='center', valign='top')
+        label.bind(size=label.setter('text_size'))
+        self.ids.deadlineBox.add_widget(label)
         self.ids.deadlineBox.add_widget(TimerButton(10))
 
 class Flip(Screen):

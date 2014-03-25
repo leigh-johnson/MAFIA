@@ -1,0 +1,67 @@
+<Label, Button>
+    halign: 'center'
+    valign: 'top'
+    text_size: self.width, None
+
+<tutLayout@BoxLayout>
+    padding: 30
+    spacing: 30
+<tutorial1>:
+    BoxLayout:
+        padding: 25
+        spacing: 10
+        orientation: 'vertical'
+        Label:
+            markup: True
+            text:('The Village is a party game for 5-12 players. Two factions jostle for control of The Village: [b]Citizens & Bad Guys[/b]. You will use this app to distribute game roles, record group decisions, and process actions.')
+            text_size: self.width, None
+        tutLayout:
+            orientation: 'horizontal'
+            Image:
+                id: tut1citizen
+                source: 'atlas://img/icon/iconatlas/icon-citizen-green'
+            Image:
+                id: tut1goon
+                source: 'atlas://img/icon/iconatlas/icon-devil-red'
+        tutLayout:
+            orientation: 'horizontal'
+            ForwardButton
+                on_press: root.manager.current = 'tutorial2'
+
+<tutorial2>
+    BoxLayout:
+        padding: 75
+        spacing: 25
+        orientation: 'vertical'
+        Label:
+            text: 'After you select a setup and enter player names, roles will be randomly distributed. Pass the device in a circle to view your role. \n\n Here is an example: '
+        tutLayout:
+            orientation: 'horizontal'
+            Button:
+                text: 'Lilly'
+                on_press: root.lillyPopup.open()
+            Button:
+                text: 'Snape'
+                on_press: root.snapePopup.open()
+        tutLayout
+            orientation: 'horizontal'
+            BackButton:
+                on_press: root.manager.current = 'tutorial1'
+            ForwardButton:
+                on_press: root.manager.current = 'tutorial2'
+
+<tutorial3>
+    BoxLayout:
+        padding: 75
+        spacing: 25
+
+<BackButton@YellowButton>
+    font_size: sp(20)
+    markup: True
+    size_hint: (.2, .6)
+    text: '[b]<-[/b]'
+<ForwardButton@OrangeButton>
+    font_size: sp(20)
+    markup: True
+    text: '[b]->[/b]'
+    size_hint: (.2, .6)

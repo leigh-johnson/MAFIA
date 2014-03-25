@@ -1,16 +1,15 @@
 #global rules
 <Button, Label>
-    font_size: sp(30)
+    text_size: self.width, None
     halign: 'center'
     valign: 'middle'
     background_normal: "atlas://img/button/buttonatlas/red"
     background_down:"atlas://img/button/buttonatlas/orange"
 
-
 <Screen>
     canvas.before:
         Color:
-            rgba: (.3,.3,.3, .8)
+            rgba: (.2,.2,.2, .8)
         Rectangle:
             pos: self.pos
             size: self.size

@@ -19,6 +19,7 @@ New player guide: http://wiki.mafiascum.net/index.php?title=Newbie_Guide
 * Windows
 * OS X
 * Linux
+
 ##Release Notes - 0.1 Alpha
 
 Current release is unstable, please wait for compiled binaries. 

@@ -7,7 +7,7 @@ gameRoles = {
     "Goon" : {
         'priority': 0,
         "partner": True,
-        "info" : "You are a Goon. You want to wrest control of The Village from its citizens. You win when living Mafia players make up a majority of The Village. ",
+        "info" : "You are a Goon. You want to wrest control of The Village from its citizens. You win when living Bad Guys make up a majority of The Village. ",
         "target": True,
             },
     "Mason" : {
@@ -18,7 +18,7 @@ gameRoles = {
         "target": True,
         'priority': 0,
         "partner": True,
-        "info": "You are The Godfather, the big cheese in a small Mafia operation. You win when living Mafia make up a majority of The Village."
+        "info": "You are The Godfather, the big cheese in a small Bad Guy operation. You win when living Bad Guys make up a majority of The Village."
         },
 
     #100 - copy
