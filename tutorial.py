@@ -11,6 +11,9 @@ class tutorial1(Screen):
     pass
 
 class tutorial2(Screen):
+
+    pass
+class tutorial3(Screen):
     lillyPopup = Popup(title='Lilly',
         content=multiLineLabel(text='You are an ordinary citizen, with no special powers or knowledge. You win when all threats to The Village are eliminated',
              halign='center', valign='middle'),

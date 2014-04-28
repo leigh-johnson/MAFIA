@@ -6,7 +6,16 @@
 <tutLayout@BoxLayout>
     padding: 30
     spacing: 30
-<tutorial1>:
+
+<tutorialMenu>
+    BoxLayout:
+        Button:
+            text: "How to Play"
+            on_press: root.manager.current = 'tutorialPlay1'
+        Button
+            text: "How to use this App"
+            on_press: root.manager.current = 'tutorialApp1'
+<tutorialApp1>:
     BoxLayout:
         padding: 25
         spacing: 10
@@ -28,7 +37,8 @@
             ForwardButton
                 on_press: root.manager.current = 'tutorial2'
 
-<tutorial2>
+
+<tutorialApp2>
     BoxLayout:
         padding: 75
         spacing: 25
@@ -50,10 +60,12 @@
             ForwardButton:
                 on_press: root.manager.current = 'tutorial2'
 
-<tutorial3>
+<tutorialApp3>
     BoxLayout:
         padding: 75
         spacing: 25
+
+<tutorialPlay1>
 
 <BackButton@YellowButton>
     font_size: sp(20)
